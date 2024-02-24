@@ -1,0 +1,12 @@
+propel:
+  database:
+    connections:
+      example-ci:
+        adapter: pgsql
+        classname: Propel\Runtime\Connection\ConnectionWrapper
+        dsn: "pgsql:host=localhost;dbname=example-ci"
+        user: postgres
+        password:
+        settings:
+          charset: utf8
+        attributes:
