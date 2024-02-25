@@ -23,7 +23,7 @@ class BookServices
 
     public function getAll()
     {
-        $q = BookQuery::create()->joinWith("Book.Author")->joinWithPublisher();
+        $q = BookQuery::create()->joinWithAuthor()->joinWithPublisher()->find();
         return $q;
     }
 }

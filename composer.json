@@ -13,8 +13,7 @@
         "php": "^7.4 || ^8.0",
         "codeigniter4/framework": "^4.0",
         "daycry/twig": "^1.2",
-        "propel/propel": "~2.0@beta",
-        "twbs/bootstrap": "5.3.3"
+        "propel/propel": "~2.0@beta"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

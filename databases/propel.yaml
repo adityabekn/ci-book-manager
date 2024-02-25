@@ -1,10 +1,10 @@
 propel:
   database:
     connections:
-      example-ci:
+      ci-book:
         adapter: pgsql
         classname: Propel\Runtime\Connection\ConnectionWrapper
-        dsn: "pgsql:host=localhost;dbname=example-ci"
+        dsn: "pgsql:host=localhost;dbname=ci-book"
         user: postgres
         password:
         settings:

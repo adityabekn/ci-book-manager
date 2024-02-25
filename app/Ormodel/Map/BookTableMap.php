@@ -38,7 +38,7 @@ class BookTableMap extends TableMap
     /**
      * The default database name for this class
      */
-    public const DATABASE_NAME = 'example-ci';
+    public const DATABASE_NAME = 'ci-book';
 
     /**
      * The table name for this class

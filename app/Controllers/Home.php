@@ -4,10 +4,13 @@ namespace App\Controllers;
 
 use AuthorServices;
 use BookServices;
+use CodeIgniter\API\ResponseTrait;
 use PublisherServices;
 
 class Home extends BaseController
 {
+    use ResponseTrait;
+
     private $authorServices;
     private $bookServices;
     private $publisherServices;
@@ -25,7 +28,7 @@ class Home extends BaseController
 //        $this->create("User1", "Lastname");
 //        $authorModel = new AuthorModel();
 
-//        Create User
+//        Create Author
 //        $addAuthor = $this->authorServices->create("Hello", "World");
 
 //        Create Publisher
@@ -34,10 +37,28 @@ class Home extends BaseController
 //        Create Book
 //        $this->bookServices->create("Book1", "isbn1", $addPublisher->getId(), $addAuthor->getId());
 
+//        $data = $this->bookServices->getAll();
+
+//        dd($data);
+
+        return $this->twig->render('test');
+    }
+
+    public function getAll()
+    {
         $data = $this->bookServices->getAll();
 
-        dd($data);
+        $json = [
+            "status" => true,
+            "data" => $data->toArray(),
+        ];
 
-        return $this->twig->render('test', ["data" => $data]);
+//        dd($data);
+
+//        dd($this->response->setJSON($json));
+
+//        dd($this->response->setJSON($data));
+//        return $this->respond($json, 200);
+        return $this->response->setJSON($json);
     }
 }

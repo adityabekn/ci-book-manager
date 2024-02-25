@@ -1,11 +1,11 @@
 <?php
 $serviceContainer = \Propel\Runtime\Propel::getServiceContainer();
 $serviceContainer->checkVersion(2);
-$serviceContainer->setAdapterClass('example-ci', 'pgsql');
-$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle('example-ci');
+$serviceContainer->setAdapterClass('ci-book', 'pgsql');
+$manager = new \Propel\Runtime\Connection\ConnectionManagerSingle('ci-book');
 $manager->setConfiguration(array (
   'classname' => 'Propel\\Runtime\\Connection\\ConnectionWrapper',
-  'dsn' => 'pgsql:host=localhost;dbname=example-ci',
+  'dsn' => 'pgsql:host=localhost;dbname=ci-book',
   'user' => 'postgres',
   'password' => '',
   'settings' =>
@@ -27,5 +27,5 @@ $manager->setConfiguration(array (
   ),
 ));
 $serviceContainer->setConnectionManager($manager);
-$serviceContainer->setDefaultDatasource('example-ci');
+$serviceContainer->setDefaultDatasource('ci-book');
 require_once __DIR__ . '\./loadDatabase.php';

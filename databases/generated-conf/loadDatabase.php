@@ -1,7 +1,7 @@
 <?php
 $serviceContainer = \Propel\Runtime\Propel::getServiceContainer();
 $serviceContainer->initDatabaseMapFromDumps(array (
-  'example-ci' => 
+  'ci-book' => 
   array (
     'tablesByName' => 
     array (
