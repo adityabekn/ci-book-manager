@@ -14,47 +14,211 @@
     <body>
         {#        <input type="text" id="search"> #}
         <div class="container">
-            <table id="myTable" class="">
-                <thead>
+            <button type="button" class="addBook btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#addModal"
+                    id="addBook">Add Book
+            </button>
+            <table id="myTable" class="table table-hover my-3">
+                <thead class="table-primary">
                     <tr>
-                        <th>Title</th>
-                        <th>ISBN</th>
-                        <th>Author</th>
-                        <th>Publisher</th>
-                        <th>Action</th>
+                        <th scope="col">Title</th>
+                        <th scope="col">ISBN</th>
+                        <th scope="col">Author</th>
+                        <th scope="col">Publisher</th>
+                        <th scope="col">Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for book in data %}
-                        <tr>
-                            <td>{{ book.Title }}</td>
-                            <td>{{ book.Isbn }}</td>
-                            <td><span>{{ book.author.FirstName }} {{ book.author.LastName }}</span></td>
-                            <td>{{ book.publisher.Name }}</td>
-                            <td>Edit | Delete</td>
-                        </tr>
-                    {% endfor %}
                 </tbody>
             </table>
             <a href="{{ base_url("get-all") }}">Link</a>
         </div>
+
+        <!-- Modal Add -->
+        <div class="modal fade" id="addModal" tabindex="-1" aria-labelledby="addModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Add Book</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="addForm">
+                        <div class="modal-body">
+                            <div class="mb-3 mx-3 row">
+                                <label for="addTitle" class="col-sm-2 col-form-label">Title</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="Title" id="addTitle">
+                                </div>
+                            </div>
+                            <div class="mb-3 mx-3 row">
+                                <label for="addISBN" class="col-sm-2 col-form-label">ISBN</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="ISBN" id="addISBN">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button id="submit" type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Edit -->
+        <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Edit Book</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form>
+                        <div class="modal-body">
+                            <div class="mb-3 mx-3 row">
+                                <label for="Title" class="col-sm-2 col-form-label">Title</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="Title" id="Title">
+                                </div>
+                            </div>
+                            <div class="mb-3 mx-3 row">
+                                <label for="ISBN" class="col-sm-2 col-form-label">ISBN</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" name="ISBN" id="ISBN">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary">Save changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Delete -->
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="exampleModalLabel">Delete Book</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure want to delete "<span class="bookTitle"></span>"</p>
+                    </div>
+                    <form id="deleteForm">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" id="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         {#        <a href="{{ route_to('api') }}"></a> #}
         <script>
             $(document).ready(function () {
                 // console.log('ready')
+                loadData()
+
+                var deleteModal = $('#deleteModal');
+
+                deleteModal.on('hidden.bs.modal', function () {
+                    $(this).find('input').remove();
+                })
+            })
+
+            var tableBody = $('tbody');
+
+            tableBody.on('click', '.editButton', function () {
+                console.log($(this).attr('id'))
+            })
+
+            tableBody.on('click', '.deleteButton', function () {
+                console.log($(this).attr('id'))
+                $('#deleteForm').prepend('<input type="hidden" name="id" id="deleteId" value=' + $(this).attr('id') + '>')
+                $('span.bookTitle').text($(this).attr('name'))
+            })
+
+            $('#addForm').on('click', '#submit', function () {
+                // console.log("submit")
+                // var addForm = $('#addForm')[0]
+                // var _data = new FormData(addForm)
+                var title = $('#addTitle').val()
+                var isbn = $('#addISBN').val()
+                // console.log(_data)
+                $.ajax({
+                    url: "{{ base_url('add-book') }}",
+                    type: 'post',
+                    data: {
+                        "Title": title,
+                        "ISBN": isbn
+                    },
+                    success: function (data) {
+                        // console.log(data)
+
+                        var addModal = $('#addModal');
+
+                        addModal.modal('hide');
+
+                        addModal.on('hidden.bs.modal', function () {
+                            $(this).find('form').trigger('reset');
+                        });
+
+                        loadData()
+                    }
+                })
+            })
+
+            $('#deleteForm').on('click', '#submit', function () {
+                // console.log("delete Submit")
+                // var deleteForm = $('#deleteForm')[0]
+                // var _data = new FormData(deleteForm)
+                var id = $('#deleteId').val()
+                console.log(id)
+                $.ajax({
+                    url: "{{ base_url('delete-book') }}",
+                    type: 'post',
+                    data: {
+                        'id': id,
+                        '_method': 'delete'
+                    },
+                    success: function (data) {
+                        console.log(data)
+
+                        var deleteModal = $('#deleteModal');
+
+                        deleteModal.modal('hide');
+
+                        deleteModal.on('hidden.bs.modal', function () {
+                            $(this).find('form').trigger('reset');
+                        })
+                        loadData();
+                    }
+                })
+            })
+
+            function loadData() {
                 $.ajax({
                     url: "{{ base_url('get-all') }}",
                     type: 'get',
                     dataType: 'json',
                     success: function (data) {
-                        addRow(data.data)
+                        switch (data.status) {
+                            case true:
+                                return addRow(data.data)
+                            case false:
+                                return $('tbody').html("<p>" + data.data + "</p>")
+                        }
+                    },
+                    error: function () {
+                        alert("Error load API")
                     }
                 })
-            })
-
-            $('tbody').on('click', '.editButton', function () {
-                console.log('clicked')
-            })
+            }
 
             function addRow(data) {
                 var rows = ''
@@ -62,13 +226,13 @@
                 $.each(data, function (key, value) {
                     // console.log(value.Author)
                     rows = rows + '<tr>'
-                    rows = rows + '<td>' + value.Title + '</td>'
+                    rows = rows + '<td class="bookTitle">' + value.Title + '</td>'
                     rows = rows + '<td>' + value.ISBN + '</td>'
                     rows = rows + '<td>' + value.Author.FirstName + ' ' + value.Author.LastName + '</td>'
                     rows = rows + '<td>' + value.Publisher.Name + '</td>'
                     rows = rows + '<td>'
-                    rows = rows + '<button class="editButton" id="' + value.Id + '">Edit</button>'
-                    rows = rows + '<button class="deleteButton" id="' + value.Id + '">Delete</button>'
+                    rows = rows + '<button type="button" class="editButton btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editModal" id="' + value.Id + '" name="' + value.Title + '">Edit</button>'
+                    rows = rows + '<button type="button" class="deleteButton btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#deleteModal" id="' + value.Id + '" name="' + value.Title + '">Delete</button>'
                     rows = rows + '</td>'
                     rows = rows + '</tr>'
                     $("tbody").html(rows);
