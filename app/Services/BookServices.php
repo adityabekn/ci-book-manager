@@ -12,7 +12,14 @@ class BookServices
         $q->setPublisherId($publisherId);
         $q->setAuthorId($authorId);
         $q->save();
+        return $q;
+    }
 
+    public function delete($id)
+    {
+        $q = BookQuery::create()->findPk($id);
+        $q->delete();
+        return $q->isDeleted();
     }
 
     public function findId($id)

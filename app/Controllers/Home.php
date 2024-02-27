@@ -11,6 +11,8 @@ class Home extends BaseController
 {
     use ResponseTrait;
 
+    protected $helpers = ['form'];
+
     private $authorServices;
     private $bookServices;
     private $publisherServices;
@@ -24,10 +26,6 @@ class Home extends BaseController
 
     public function index(): string
     {
-//        $authorServices = new AuthorServices();
-//        $this->create("User1", "Lastname");
-//        $authorModel = new AuthorModel();
-
 //        Create Author
 //        $addAuthor = $this->authorServices->create("Hello", "World");
 
@@ -37,28 +35,131 @@ class Home extends BaseController
 //        Create Book
 //        $this->bookServices->create("Book1", "isbn1", $addPublisher->getId(), $addAuthor->getId());
 
+//        Get All Book
 //        $data = $this->bookServices->getAll();
-
-//        dd($data);
 
         return $this->twig->render('test');
     }
 
     public function getAll()
     {
-        $data = $this->bookServices->getAll();
+        try {
+//            Get All Book
+            $data = $this->bookServices->getAll();
 
-        $json = [
-            "status" => true,
-            "data" => $data->toArray(),
+//            Check if data empty
+            if (!$data->toArray()) {
+                $response = [
+                    'status' => false,
+                    'data' => 'Data is empty.'
+                ];
+
+                return $this->response->setJSON($response);
+            }
+
+            $response = [
+                'status' => true,
+                'data' => $data->toArray()
+            ];
+
+//            Return Response
+            return $this->response->setJSON($response);
+
+        } catch (\Exception $e) {
+            $response = [
+                'status' => false,
+                'data' => $e->getMessage()
+            ];
+
+//            Return Error
+            return $this->response->setJSON($response);
+        }
+    }
+
+    public function doAdd()
+    {
+        try {
+//            Init request
+            $title = $this->request->getPost('Title');
+            $isbn = $this->request->getPost('ISBN');
+
+//            Use method validation
+            if (! $this->validation($title, $isbn)) {
+                return $this->response->setJSON($this->validator->getErrors());
+            }
+
+//            Insert Book
+            $addProccess = $this->bookServices->create($title, $isbn, 6, 6);
+
+            $response = [
+                'status' => true,
+                'data' => $addProccess->toArray(),
+            ];
+
+            return $this->response->setJSON($response);
+
+        } catch (\Exception $e) {
+            $response = [
+                'status' => false,
+                'data' => $e->getMessage()
+            ];
+
+//            Return Error
+            return $this->response->setJSON($response);
+        }
+    }
+
+    public function doUpdate()
+    {
+
+    }
+
+    public function doDelete()
+    {
+//        $validation = \Config\Services::validation();
+        try {
+            if (!$this->request->is('delete')) {
+                $response = [
+                    'status' => true,
+                    'data' => "Wrong request"
+                ];
+
+                return $this->response->setJSON($response);
+            }
+
+            $id = $this->request->getPost('id');
+
+            $delete = $this->bookServices->delete($id);
+
+            $response = [
+                'status' => true,
+                'data' => $delete
+            ];
+
+            return $this->response->setJSON($response);
+
+        } catch (\Exception $e) {
+            $response = [
+                'status' => false,
+                'data' => $e->getMessage()
+            ];
+
+            return $this->response->setJSON($response);
+        }
+    }
+
+    public function validation($title, $isbn)
+    {
+        $rules = [
+            'Title' => 'required',
+            'ISBN' => 'required'
         ];
 
-//        dd($data);
+        $data = [
+            'Title' => $title,
+            'ISBN' => $isbn
+        ];
 
-//        dd($this->response->setJSON($json));
-
-//        dd($this->response->setJSON($data));
-//        return $this->respond($json, 200);
-        return $this->response->setJSON($json);
+        return $this->validateData($data, $rules);
     }
 }
