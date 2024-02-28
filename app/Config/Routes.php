@@ -11,3 +11,4 @@ $routes->get('get-all', [Home::class, 'getAll']);
 
 $routes->post('add-book', [Home::class, 'doAdd']);
 $routes->delete('delete-book', [Home::class, 'doDelete']);
+$routes->put('update-book', [Home::class, 'doUpdate']);

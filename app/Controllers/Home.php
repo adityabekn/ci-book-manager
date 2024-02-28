@@ -4,15 +4,12 @@ namespace App\Controllers;
 
 use AuthorServices;
 use BookServices;
-use CodeIgniter\API\ResponseTrait;
+use CodeIgniter\Validation\Validation;
+use Config\Services;
 use PublisherServices;
 
 class Home extends BaseController
 {
-    use ResponseTrait;
-
-    protected $helpers = ['form'];
-
     private $authorServices;
     private $bookServices;
     private $publisherServices;
@@ -26,19 +23,7 @@ class Home extends BaseController
 
     public function index(): string
     {
-//        Create Author
-//        $addAuthor = $this->authorServices->create("Hello", "World");
-
-//        Create Publisher
-//        $addPublisher = $this->publisherServices->create("Test");
-
-//        Create Book
-//        $this->bookServices->create("Book1", "isbn1", $addPublisher->getId(), $addAuthor->getId());
-
-//        Get All Book
-//        $data = $this->bookServices->getAll();
-
-        return $this->twig->render('test');
+        return $this->twig->render('home');
     }
 
     public function getAll()
@@ -84,8 +69,25 @@ class Home extends BaseController
             $isbn = $this->request->getPost('ISBN');
 
 //            Use method validation
-            if (! $this->validation($title, $isbn)) {
-                return $this->response->setJSON($this->validator->getErrors());
+            $validation = Services::validation();
+
+            $validation->setRules([
+                'Title' => 'required',
+                'ISBN' => 'required'
+            ]);
+
+            $data = [
+                'Title' => $title,
+                'ISBN' => $isbn,
+            ];
+
+            if (!$validation->run($data)) {
+                $response = [
+                    'status' => false,
+                    'data' => $validation->getErrors(),
+                ];
+
+                return $this->response->setJSON($response);
             }
 
 //            Insert Book
@@ -111,23 +113,73 @@ class Home extends BaseController
 
     public function doUpdate()
     {
-
-    }
-
-    public function doDelete()
-    {
-//        $validation = \Config\Services::validation();
         try {
-            if (!$this->request->is('delete')) {
+            $id = $this->request->getPost('id');
+            $title = $this->request->getPost('Title');
+            $isbn = $this->request->getPost('ISBN');
+
+            $validation = Services::validation();
+
+            $validation->setRules([
+                'id' => 'required',
+                'Title' => 'required',
+                'ISBN' => 'required'
+            ]);
+
+            $data = [
+                'id' => $id,
+                'Title' => $title,
+                'ISBN' => $isbn
+            ];
+
+            if (!$validation->run($data)) {
                 $response = [
-                    'status' => true,
-                    'data' => "Wrong request"
+                    'status' => false,
+                    'data' => $validation->getErrors(),
                 ];
 
                 return $this->response->setJSON($response);
             }
+        } catch (\Exception $e) {
+            $response = [
+                'status' => false,
+                'data' => $e->getMessage()
+            ];
 
+            return $this->response->setJSON($response);
+        }
+    }
+
+    public function doDelete()
+    {
+        try {
             $id = $this->request->getPost('id');
+
+//            if (!$this->request->is('delete')) {
+//                $response = [
+//                    'status' => true,
+//                    'data' => "Wrong request"
+//                ];
+//
+//                return $this->response->setJSON($response);
+//            }
+
+            $validation = Services::validation();
+
+            $validation->setRule('id', 'id', 'required');
+
+            $data = [
+                'id' => $id,
+            ];
+
+            if (!$validation->run($data)) {
+                $response = [
+                    'status' => false,
+                    'data' => $validation->getErrors(),
+                ];
+
+                return $this->response->setJSON($response);
+            }
 
             $delete = $this->bookServices->delete($id);
 
@@ -146,20 +198,5 @@ class Home extends BaseController
 
             return $this->response->setJSON($response);
         }
-    }
-
-    public function validation($title, $isbn)
-    {
-        $rules = [
-            'Title' => 'required',
-            'ISBN' => 'required'
-        ];
-
-        $data = [
-            'Title' => $title,
-            'ISBN' => $isbn
-        ];
-
-        return $this->validateData($data, $rules);
     }
 }

@@ -17,7 +17,11 @@ class BookServices
 
     public function delete($id)
     {
-        $q = BookQuery::create()->findPk($id);
+        $q = BookQuery::create()->findOneById($id);
+
+        if ($q == null) {
+            throw new Exception('Id not found');
+        }
         $q->delete();
         return $q->isDeleted();
     }

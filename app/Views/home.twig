@@ -46,13 +46,21 @@
                             <div class="mb-3 mx-3 row">
                                 <label for="addTitle" class="col-sm-2 col-form-label">Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" name="Title" id="addTitle">
+                                    <input type="text" class="form-control" name="Title" id="addTitle"
+                                           aria-describedby="invalidAddTitle">
+                                    <div id="invalidAddTitle" class="invalid-feedback">
+                                        Masukkan Judul Buku.
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3 mx-3 row">
                                 <label for="addISBN" class="col-sm-2 col-form-label">ISBN</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" name="ISBN" id="addISBN">
+                                    <input type="text" class="form-control" name="ISBN" id="addISBN"
+                                           aria-describedby="invalidAddISBN">
+                                    <div id="invalidAddISBN" class="invalid-feedback">
+                                        Masukkan ISBN.
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -73,24 +81,32 @@
                         <h5 class="modal-title" id="exampleModalLabel">Edit Book</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form>
+                    <form id="updateForm">
                         <div class="modal-body">
                             <div class="mb-3 mx-3 row">
                                 <label for="Title" class="col-sm-2 col-form-label">Title</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" name="Title" id="Title">
+                                    <input type="text" class="form-control" name="Title" id="editTitle"
+                                           aria-describedby="invalidEditTitle">
+                                    <div id="invalidEditTitle" class="invalid-feedback">
+                                        Masukkan Judul Buku.
+                                    </div>
                                 </div>
                             </div>
                             <div class="mb-3 mx-3 row">
                                 <label for="ISBN" class="col-sm-2 col-form-label">ISBN</label>
                                 <div class="col-sm-10">
-                                    <input type="text" class="form-control" name="ISBN" id="ISBN">
+                                    <input type="text" class="form-control" name="ISBN" id="editISBN"
+                                           aria-describedby="invalidAddTitle">
+                                    <div id="invalidAddTitle" class="invalid-feedback">
+                                        Masukkan ISBN.
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
+                            <button type="button" id="submit" class="btn btn-primary">Save changes</button>
                         </div>
                     </form>
                 </div>
@@ -124,17 +140,45 @@
                 // console.log('ready')
                 loadData()
 
+                addModalChange()
+                editModalChange()
+                deleteModalChange()
+            })
+
+            function addModalChange() {
+                var addModal = $('#addModal');
+
+                addModal.on('hidden.bs.modal', function () {
+                    $(this).find('form').trigger('reset');
+                    $('#addTitle').removeClass('is-invalid')
+                    $('#addISBN').removeClass('is-invalid')
+                })
+            }
+
+            function editModalChange() {
+                var editModal = $('#editModal');
+
+                editModal.on('hidden.bs.modal', function () {
+                    $(this).find('form').trigger('reset');
+                    // $('#addTitle').removeClass('is-invalid')
+                    // $('#addISBN').removeClass('is-invalid')
+                })
+            }
+
+            function deleteModalChange() {
                 var deleteModal = $('#deleteModal');
 
                 deleteModal.on('hidden.bs.modal', function () {
                     $(this).find('input').remove();
                 })
-            })
+            }
 
             var tableBody = $('tbody');
 
             tableBody.on('click', '.editButton', function () {
-                console.log($(this).attr('id'))
+                $('#updateForm').prepend('<input type="hidden" name="id" id="editId" value=' + $(this).attr('id') + '>')
+                $('#editTitle').val($(this).attr('name'))
+                $('#editISBN').val($(this).attr('data-isbn'))
             })
 
             tableBody.on('click', '.deleteButton', function () {
@@ -158,17 +202,51 @@
                         "ISBN": isbn
                     },
                     success: function (data) {
-                        // console.log(data)
+                        if (data.status) {
+                            $('#addModal').modal('hide');
 
-                        var addModal = $('#addModal');
+                            addModalChange()
 
-                        addModal.modal('hide');
+                            loadData()
+                        } else {
+                            $.each(data.data, function (field) {
+                                $('#add' + field).addClass('is-invalid')
+                            })
+                        }
+                    }
+                })
+            })
 
-                        addModal.on('hidden.bs.modal', function () {
-                            $(this).find('form').trigger('reset');
-                        });
-
-                        loadData()
+            $('#updateForm').on('click', '#submit', function () {
+                // console.log("submit")
+                // var addForm = $('#addForm')[0]
+                // var _data = new FormData(addForm)
+                var title = $('#editTitle').val()
+                var isbn = $('#editISBN').val()
+                var id = $('#editId').val()
+                // console.log(_data)
+                $.ajax({
+                    url: "{{ base_url('update-book') }}",
+                    type: 'post',
+                    data: {
+                        "id": id,
+                        "Title": title,
+                        "ISBN": isbn,
+                        "_method": 'put'
+                    },
+                    success: function (data) {
+                        console.log(data)
+                        // if (data.status) {
+                        //     $('#addModal').modal('hide');
+                        //
+                        //     addModalChange()
+                        //
+                        //     loadData()
+                        // } else {
+                        //     $.each(data.data, function (field) {
+                        //         $('#add' + field).addClass('is-invalid')
+                        //     })
+                        // }
                     }
                 })
             })
@@ -178,7 +256,6 @@
                 // var deleteForm = $('#deleteForm')[0]
                 // var _data = new FormData(deleteForm)
                 var id = $('#deleteId').val()
-                console.log(id)
                 $.ajax({
                     url: "{{ base_url('delete-book') }}",
                     type: 'post',
@@ -189,13 +266,8 @@
                     success: function (data) {
                         console.log(data)
 
-                        var deleteModal = $('#deleteModal');
+                        $('#deleteModal').modal('hide');
 
-                        deleteModal.modal('hide');
-
-                        deleteModal.on('hidden.bs.modal', function () {
-                            $(this).find('form').trigger('reset');
-                        })
                         loadData();
                     }
                 })
@@ -211,7 +283,7 @@
                             case true:
                                 return addRow(data.data)
                             case false:
-                                return $('tbody').html("<p>" + data.data + "</p>")
+                                return $('tbody').html("<tr><td colspan='5' class='text-center'>" + data.data + "</td></td>")
                         }
                     },
                     error: function () {
@@ -227,11 +299,11 @@
                     // console.log(value.Author)
                     rows = rows + '<tr>'
                     rows = rows + '<td class="bookTitle">' + value.Title + '</td>'
-                    rows = rows + '<td>' + value.ISBN + '</td>'
+                    rows = rows + '<td class="bookISBN">' + value.ISBN + '</td>'
                     rows = rows + '<td>' + value.Author.FirstName + ' ' + value.Author.LastName + '</td>'
                     rows = rows + '<td>' + value.Publisher.Name + '</td>'
                     rows = rows + '<td>'
-                    rows = rows + '<button type="button" class="editButton btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editModal" id="' + value.Id + '" name="' + value.Title + '">Edit</button>'
+                    rows = rows + '<button type="button" class="editButton btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#editModal" id="' + value.Id + '" name="' + value.Title + '" data-isbn="' + value.ISBN + '">Edit</button>'
                     rows = rows + '<button type="button" class="deleteButton btn btn-danger btn-sm me-2" data-bs-toggle="modal" data-bs-target="#deleteModal" id="' + value.Id + '" name="' + value.Title + '">Delete</button>'
                     rows = rows + '</td>'
                     rows = rows + '</tr>'
